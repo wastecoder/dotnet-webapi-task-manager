@@ -1,6 +1,13 @@
 ﻿services:
-  taskmanager:
-    image: taskmanager
-    build:
-      context: .
-      dockerfile: TaskManager/Dockerfile
+  postgres-taskmanager:
+    image: postgres:latest
+    container_name: postgres-task-manager
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: TaskManagerDb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
