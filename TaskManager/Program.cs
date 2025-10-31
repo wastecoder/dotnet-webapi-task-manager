@@ -1,6 +1,12 @@
+using TaskManager.Domain;
+using Microsoft.EntityFrameworkCore;
+using TaskManager.Infrastructure.Database;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<TaskDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql")));
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
