@@ -8,6 +8,7 @@
 **/[Ll]og/
 **/[Tt]emp/
 **/mysql-data/
+**/postgres-data/
 
 # ========================================
 # Packages / local dependencies
