@@ -52,8 +52,29 @@ public class TaskController : ControllerBase
         var task = await _context.Tasks.FindAsync(id);
 
         if (task == null)
-            return NotFound(ProblemFactory.NotFound($"Task with ID {id} not found.", HttpContext.Request.Path));
+            return NotFound(ProblemFactory.NotFound(
+                detail: $"Task with ID {id} not found.",
+                instance: HttpContext.Request.Path
+            ));
 
         return Ok(task.ToResponseDto());
+    }
+
+    [HttpPut("{id:int}")]
+    public IActionResult Update(int id, [FromBody] UpdateTaskDto updateDto)
+    {
+        var existingTask = _context.Tasks.Find(id);
+        if (existingTask == null)
+        {
+            return NotFound(ProblemFactory.NotFound(
+                detail: $"Task with ID {id} not found.",
+                instance: HttpContext.Request.Path
+            ));
+        }
+
+        existingTask.UpdateEntity(updateDto);
+        _context.SaveChanges();
+
+        return Ok(existingTask.ToResponseDto());
     }
 }
