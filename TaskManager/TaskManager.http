@@ -1,6 +1,34 @@
 @TaskManager_HostAddress = http://localhost:5068
 
-GET {{TaskManager_HostAddress}}/weatherforecast/
+### Create Task
+POST {{TaskManager_HostAddress}}/tasks
+Content-Type: application/json
+
+{
+  "title": "Test Task",
+  "description": "This is a test task",
+  "dueDate": "2025-11-03T10:00:00Z",
+  "status": "Pending"
+}
+
+### Get Tasks
+GET {{TaskManager_HostAddress}}/tasks?page=1&pageSize=5&title=Test&status=Pending&dueDate=2025-11-03
 Accept: application/json
 
-###
+### Get Task By ID
+GET {{TaskManager_HostAddress}}/tasks/1
+Accept: application/json
+
+### Update Task
+PUT {{TaskManager_HostAddress}}/tasks/1
+Content-Type: application/json
+
+{
+  "title": "Updated Task",
+  "description": "Updated description",
+  "dueDate": "2025-11-04T10:00:00Z",
+  "status": "Completed"
+}
+
+### Delete Task
+DELETE {{TaskManager_HostAddress}}/tasks/1
