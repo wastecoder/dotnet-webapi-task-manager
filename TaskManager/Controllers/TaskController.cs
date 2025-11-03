@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TaskManager.Domain.DTOs.Common;
 using TaskManager.Domain.DTOs.Task;
+using TaskManager.Domain.Enums;
 using TaskManager.Domain.Factories;
 using TaskManager.Infrastructure.Database;
 using TaskManager.Mappers;
@@ -29,21 +31,45 @@ public class TaskController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<TaskResponseDto>>> GetAll(
-        [FromQuery] int page = 1, 
+    public async Task<ActionResult<PagedResponse<TaskResponseDto>>> Get(
+        [FromQuery] string? title,
+        [FromQuery] ETaskStatus? status,
+        [FromQuery] DateTime? dueDate,
+        [FromQuery] int page = 1,
         [FromQuery] int pageSize = 5)
     {
-        if (page <= 0) page = 1;
-        if (pageSize <= 0) pageSize = 5;
+        var query = _context.Tasks.AsQueryable();
 
-        var tasks = await _context.Tasks
+        if (!string.IsNullOrWhiteSpace(title))
+            query = query.Where(t => t.Title.Contains(title));
+
+        if (status.HasValue)
+            query = query.Where(t => t.Status == status.Value);
+
+        if (dueDate.HasValue)
+        {
+            var startOfDayUtc = DateTime.SpecifyKind(dueDate.Value.Date, DateTimeKind.Utc);
+            var endOfDayUtc = startOfDayUtc.AddDays(1);
+
+            query = query.Where(t => t.DueDate >= startOfDayUtc && t.DueDate < endOfDayUtc);
+        }
+
+        var totalItems = await query.CountAsync();
+
+        var tasks = await query
             .OrderBy(t => t.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
         var response = tasks.Select(t => t.ToResponseDto());
-        return Ok(response);
+
+        return Ok(new PagedResponse<TaskResponseDto>(
+            Page: page,
+            PageSize: pageSize,
+            TotalItems: totalItems,
+            Items: response
+        ));
     }
 
     [HttpGet("{id:int}")]
