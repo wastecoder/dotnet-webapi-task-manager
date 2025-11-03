@@ -1,33 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TaskManager.Domain.DTOs.Common;
 using TaskManager.Domain.DTOs.Task;
 using TaskManager.Domain.Enums;
+using TaskManager.Domain.Interfaces;
 using TaskManager.Domain.Factories;
-using TaskManager.Infrastructure.Database;
-using TaskManager.Mappers;
+using TaskManager.Domain.DTOs.Common;
 
 namespace TaskManager.Controllers;
 
 [ApiController]
 [Route("tasks")]
-public class TaskController : ControllerBase
+public class TaskController(ITaskService _taskService) : ControllerBase
 {
-    private readonly TaskDbContext _context;
-    public TaskController(TaskDbContext dbContext)
-    {
-        _context = dbContext;
-    }
-
     [HttpPost]
-    public IActionResult Post([FromBody] CreateTaskDto newTaskDto)
+    public async Task<IActionResult> Post([FromBody] CreateTaskDto newTaskDto)
     {
-        var newTask = newTaskDto.ToEntity();
-
-        _context.Add(newTask);
-        _context.SaveChanges();
-
-        return CreatedAtAction(nameof(GetById), new { id = newTask.Id }, newTask.ToResponseDto());
+        var newTask = await _taskService.Create(newTaskDto);
+        return CreatedAtAction(nameof(GetById), new { id = newTask.Id }, newTask);
     }
 
     [HttpGet]
@@ -38,86 +26,45 @@ public class TaskController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 5)
     {
-        var query = _context.Tasks.AsQueryable();
-
-        if (!string.IsNullOrWhiteSpace(title))
-            query = query.Where(t => t.Title.Contains(title));
-
-        if (status.HasValue)
-            query = query.Where(t => t.Status == status.Value);
-
-        if (dueDate.HasValue)
-        {
-            var startOfDayUtc = DateTime.SpecifyKind(dueDate.Value.Date, DateTimeKind.Utc);
-            var endOfDayUtc = startOfDayUtc.AddDays(1);
-
-            query = query.Where(t => t.DueDate >= startOfDayUtc && t.DueDate < endOfDayUtc);
-        }
-
-        var totalItems = await query.CountAsync();
-
-        var tasks = await query
-            .OrderBy(t => t.Id)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        var response = tasks.Select(t => t.ToResponseDto());
-
-        return Ok(new PagedResponse<TaskResponseDto>(
-            Page: page,
-            PageSize: pageSize,
-            TotalItems: totalItems,
-            Items: response
-        ));
+        var response = await _taskService.GetAll(title, status, dueDate, page, pageSize);
+        return Ok(response);
     }
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<TaskResponseDto>> GetById(int id)
+    public async Task<IActionResult> GetById(int id)
     {
-        var task = await _context.Tasks.FindAsync(id);
-
+        var task = await _taskService.GetById(id);
         if (task == null)
             return NotFound(ProblemFactory.NotFound(
                 detail: $"Task with ID {id} not found.",
                 instance: HttpContext.Request.Path
             ));
 
-        return Ok(task.ToResponseDto());
+        return Ok(task);
     }
 
     [HttpPut("{id:int}")]
-    public IActionResult Update(int id, [FromBody] UpdateTaskDto updateDto)
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateTaskDto dto)
     {
-        var existingTask = _context.Tasks.Find(id);
-        if (existingTask == null)
-        {
+        var updated = await _taskService.Update(id, dto);
+        if (updated == null)
             return NotFound(ProblemFactory.NotFound(
                 detail: $"Task with ID {id} not found.",
                 instance: HttpContext.Request.Path
             ));
-        }
 
-        existingTask.UpdateEntity(updateDto);
-        _context.SaveChanges();
-
-        return Ok(existingTask.ToResponseDto());
+        return Ok(updated);
     }
 
     [HttpDelete("{id:int}")]
-    public IActionResult Delete(int id)
+    public async Task<IActionResult> Delete(int id)
     {
-        var existingTask = _context.Tasks.Find(id);
-        if (existingTask == null)
-        {
+        var deleted = await _taskService.Delete(id);
+        if (!deleted)
             return NotFound(ProblemFactory.NotFound(
                 detail: $"Task with ID {id} not found.",
                 instance: HttpContext.Request.Path
             ));
-        }
-
-        _context.Tasks.Remove(existingTask);
-        _context.SaveChanges();
 
         return NoContent();
     }

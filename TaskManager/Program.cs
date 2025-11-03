@@ -1,11 +1,15 @@
 using Microsoft.EntityFrameworkCore;
+using TaskManager.Domain.Interfaces;
 using TaskManager.Infrastructure.Database;
+using TaskManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql")));
+
+builder.Services.AddScoped<ITaskService, TaskService>();
 
 // Converts enums from int to string.
 builder.Services.AddControllers()
