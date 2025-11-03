@@ -1,4 +1,3 @@
-using TaskManager.Domain;
 using Microsoft.EntityFrameworkCore;
 using TaskManager.Infrastructure.Database;
 
@@ -8,16 +7,32 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql")));
 
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Converts enums from int to string.
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
+
+// Add support to Swagger (Swashbuckle).
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
+
+    // Open Swagger automatically in your browser.
+    const string swaggerUrl = "http://localhost:5068/swagger";
+    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+    {
+        FileName = swaggerUrl,
+        UseShellExecute = true
+    });
 }
 
 app.UseHttpsRedirection();
