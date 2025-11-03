@@ -10,7 +10,7 @@ using TaskManager.Mappers;
 namespace TaskManager.Controllers;
 
 [ApiController]
-[Route("[controller]")]
+[Route("tasks")]
 public class TaskController : ControllerBase
 {
     private readonly TaskDbContext _context;
