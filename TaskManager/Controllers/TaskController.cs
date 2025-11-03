@@ -27,7 +27,7 @@ public class TaskController : ControllerBase
         _context.Add(newTask);
         _context.SaveChanges();
 
-        return CreatedAtAction(nameof(Post), new { id = newTask.Id }, newTask.ToResponseDto());
+        return CreatedAtAction(nameof(GetById), new { id = newTask.Id }, newTask.ToResponseDto());
     }
 
     [HttpGet]
