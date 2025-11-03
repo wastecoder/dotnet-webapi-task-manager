@@ -77,4 +77,22 @@ public class TaskController : ControllerBase
 
         return Ok(existingTask.ToResponseDto());
     }
+
+    [HttpDelete("{id:int}")]
+    public IActionResult Delete(int id)
+    {
+        var existingTask = _context.Tasks.Find(id);
+        if (existingTask == null)
+        {
+            return NotFound(ProblemFactory.NotFound(
+                detail: $"Task with ID {id} not found.",
+                instance: HttpContext.Request.Path
+            ));
+        }
+
+        _context.Tasks.Remove(existingTask);
+        _context.SaveChanges();
+
+        return NoContent();
+    }
 }
