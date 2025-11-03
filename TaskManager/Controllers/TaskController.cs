@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskManager.Domain.DTOs.Task;
+using TaskManager.Domain.Factories;
 using TaskManager.Infrastructure.Database;
 using TaskManager.Mappers;
 
@@ -26,7 +27,7 @@ public class TaskController : ControllerBase
 
         return CreatedAtAction(nameof(Post), new { id = newTask.Id }, newTask.ToResponseDto());
     }
-    
+
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TaskResponseDto>>> GetAll(
         [FromQuery] int page = 1, 
@@ -43,5 +44,16 @@ public class TaskController : ControllerBase
 
         var response = tasks.Select(t => t.ToResponseDto());
         return Ok(response);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<TaskResponseDto>> GetById(int id)
+    {
+        var task = await _context.Tasks.FindAsync(id);
+
+        if (task == null)
+            return NotFound(ProblemFactory.NotFound($"Task with ID {id} not found.", HttpContext.Request.Path));
+
+        return Ok(task.ToResponseDto());
     }
 }
