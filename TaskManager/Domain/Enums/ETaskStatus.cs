@@ -1,6 +1,6 @@
 ﻿namespace TaskManager.Domain.Enums;
 
-public enum TaskStatus
+public enum ETaskStatus
 {
     Pending = 0,
     Running = 1,
