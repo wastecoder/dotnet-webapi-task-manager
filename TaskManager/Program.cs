@@ -3,12 +3,16 @@ using TaskManager.Domain.Interfaces;
 using TaskManager.Infrastructure.Database;
 using TaskManager.Services;
 
+#region Builder
 var builder = WebApplication.CreateBuilder(args);
+#endregion
 
+#region Services Configuration
 // Add services to the container.
 builder.Services.AddDbContext<TaskDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSql")));
 
+// Register TaskService with dependency injection.
 builder.Services.AddScoped<ITaskService, TaskService>();
 
 // Converts enums from int to string.
@@ -21,20 +25,35 @@ builder.Services.AddControllers()
 // Add support to Swagger (Swashbuckle).
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+#endregion
 
+#region Build App
 var app = builder.Build();
+#endregion
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+#region Apply EF Migrations
+// Apply migrations automatically
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+    db.Database.Migrate(); // Applies pending migrations
 }
 
+// Apply migrations only in Development (optional)
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
+    db.Database.Migrate();
+}
+#endregion
+
+#region HTTP Request Pipeline
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
+#endregion
 
+#region Run App
 app.Run();
+#endregion
