@@ -29,14 +29,6 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-
-    // Open Swagger automatically in your browser.
-    const string swaggerUrl = "http://localhost:5068/swagger";
-    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-    {
-        FileName = swaggerUrl,
-        UseShellExecute = true
-    });
 }
 
 app.UseHttpsRedirection();
