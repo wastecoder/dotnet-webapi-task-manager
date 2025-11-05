@@ -102,12 +102,12 @@ dotnet-webapi-task-manager/TaskManager/
 
 ## ⚙️ Tecnologias Utilizadas
 
-- **.NET SDK 9.0** → plataforma principal  
-- **C# 12** → linguagem de desenvolvimento  
-- **Entity Framework Core** → ORM para persistência  
-- **PostgreSQL (via Docker)** → banco de dados relacional  
-- **Swashbuckle.AspNetCore** → documentação e testes via Swagger  
-- **Rider** → IDE utilizada no desenvolvimento  
+- **.NET SDK 9.0** → plataforma principal
+- **C# 12** → linguagem de desenvolvimento
+- **Entity Framework Core** → ORM para persistência
+- **PostgreSQL (via Docker)** → banco de dados relacional
+- **Swashbuckle.AspNetCore** → documentação e testes via Swagger
+- **Rider** → IDE utilizada no desenvolvimento
 
 
 ---
@@ -121,21 +121,23 @@ git clone https://github.com/wastecoder/dotnet-webapi-task-manager.git
 cd dotnet-webapi-task-manager
 ```
 
-2. Suba o banco de dados com Docker:
+2. Construa e suba os containers (API + PostgreSQL):
 ```bash
-docker compose up -d
+docker compose up -d --build
 ```
 
-3. Execute as migrations para criar o schema no banco:
-```bash
-dotnet ef database update
-```
+Use o parâmetro `--build` sempre que houver alterações no código.
 
-4. Execute a API:
+3. Aguarde alguns segundos para o PostgreSQL inicializar.
+
+A API aplicará automaticamente as migrations do Entity Framework ao iniciar.
+
+4. Acesse o Swagger na porta [8080](http://localhost:8080/swagger) para testar os endpoints.
+
+5. Caso queira parar os containers:
 ```bash
-docker compose up -d
+docker compose down
 ```
-A API estará disponível na porta [5054](http://localhost:5054/swagger).
 
 
 ---
@@ -152,10 +154,6 @@ A API estará disponível na porta [5054](http://localhost:5054/swagger).
 - **🧰 Adicionar validação de dados nos DTOs**
   - Utilizar **Data Annotations** (ex: `[Required]`, `[StringLength]`, `[Range]`, `[EnumDataType]`) para validar automaticamente as entradas recebidas nos DTOs.  
   - Retornar respostas padronizadas com **ProblemDetailsDto** em caso de erro de validação.
-
-- **🐳 Containerizar completamente a API**
-  - Criar um **Dockerfile** para a aplicação.  
-  - Permitir que o sistema completo (API + PostgreSQL) seja iniciado com: `docker compose up`.
 
 - **📦 Criar seed inicial de dados**
   - Inserir tarefas de exemplo automaticamente ao iniciar o ambiente de desenvolvimento.
