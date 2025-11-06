@@ -32,14 +32,7 @@ var app = builder.Build();
 #endregion
 
 #region Apply EF Migrations
-// Apply migrations automatically
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<TaskDbContext>();
-    db.Database.Migrate(); // Applies pending migrations
-}
-
-// Apply migrations only in Development (optional)
+// Apply migrations only in Development
 if (app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
