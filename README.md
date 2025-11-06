@@ -60,7 +60,7 @@ dotnet-webapi-task-manager/TaskManager/
 └── appsettings.Development.json
 ```
 
-> O ponto de entrada da aplicação é o **Program.cs**, que abrirá o Swagger ao executar.
+> O ponto de entrada da aplicação é o **Program.cs**.
 
 
 ---
@@ -91,6 +91,11 @@ dotnet-webapi-task-manager/TaskManager/
 - [x] **Banco de Dados via Docker**
   - [x] Container PostgreSQL configurado no `docker-compose.yml`
   - [x] Migrations geradas via `dotnet ef migrations`
+
+- [x] **Containerização Completa**
+  - [x] API e banco PostgreSQL executando via **Docker Compose**
+  - [x] Build automatizado da imagem da API com `--build`
+  - [x] Inicialização simplificada com um único comando (`docker compose up -d --build`)
 
 - [x] **Swagger**
   - [x] Documentação automática dos endpoints
